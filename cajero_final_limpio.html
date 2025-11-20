@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cajero Automático</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .atm-container {
+            background: #2d3748;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .atm-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .atm-header h1 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .atm-header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+        }
+        
+        .screen {
+            background: #1a202c;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .welcome-screen h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .balance-display {
+            background: #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .balance-display h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .menu-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .menu-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .menu-btn:hover {
+            background: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0aec0;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #4a5568;
+            background: #2d3748;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .action-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .back-btn {
+            background: #4a5568;
+            margin-top: 10px;
+        }
+        
+        .back-btn:hover {
+            background: #2d3748;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .transaction-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            background: #4a5568;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .session-timer {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="atm-container">
+        <div class="atm-header">
+            <h1>🏦 Cajero Automático</h1>
+            <p>Banco Nacional</p>
+        </div>
+        
+        <div class="screen">
+            <div id="welcomeScreen" class="welcome-screen">
+                <h2>Bienvenido</h2>
+                <p>Ingrese su tarjeta para comenzar</p>
+                <div class="input-group">
+                    <label>Número de Tarjeta</label>
+                    <input type="text" id="cardNumber" placeholder="Ingrese cualquier número">
+                </div>
+                <div class="input-group">
+                    <label>PIN (4 dígitos)</label>
+                    <input type="password" id="pin" placeholder="****" maxlength="4">
+                </div>
+                <button class="action-btn" onclick="login()">Ingresar</button>
+            </div>
+            
+            <div id="mainMenu" class="hidden">
+                <h2>Menú Principal</h2>
+                <div class="balance-display">
+                    <h3>Saldo Disponible</h3>
+                    <div class="balance-amount" id="balance">$5,000.00</div>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-btn" onclick="showScreen('withdrawScreen')">💵 Retirar</button>
+                    <button class="menu-btn" onclick="showScreen('depositScreen')">💰 Depositar</button>
+                    <button class="menu-btn" onclick="showScreen('transferScreen')">📤 Transferir</button>
+                    <button class="menu-btn" onclick="showScreen('historyScreen')">📋 Historial</button>
+                    <button class="menu-btn" onclick="showScreen('receiptScreen')">🧾 Comprobante</button>
+                    <button class="menu-btn" onclick="logout()">🚪 Salir</button>
+                </div>
+                <div class="session-timer">
+                    Sesión expira en: <span id="sessionTimer">2:00</span>
+                </div>
+            </div>
+            
+            <div id="withdrawScreen" class="hidden">
+                <h2>Retirar Efectivo</h2>
+                <div class="input-group">
+                    <label>Monto a retirar (múltiplos de $10)</label>
+                    <input type="number" id="withdrawAmount" placeholder="Ingrese el monto" min="10" step="10">
+                </div>
+                <button class="action-btn" onclick="withdraw()">Retirar</button>
+                <button class="action-btn back-btn" onclick="showScreen('mainMenu')">Volver</button>
+            </div>
+            
+            <div id="depositScreen" class="hidden">
+                <h2>Depositar Efectivo</h2>
+                <div class="input-group">
+                    <label>Monto a depositar</label>
+                    <input type="number" id="depositAmount" placeholder="Ingrese el monto" min="1">
+                </div>
+                <button class="action-btn" onclick="deposit()">Depositar</button>
+                <button class="action-btn back-btn" onclick="showScreen('mainMenu')">Volver</button>
+            </div>
+            
+            <div id="transferScreen" class="hidden">
+                <h2>Transferir Dinero</h2>
+                <div class="input-group">
+                    <label>Cuenta destino</label>
+                    <input type="text" id="transferAccount" placeholder="Número de cuenta">
+                </div>
+                <div class="input-group">
+                    <label>Monto</label>
+                    <input type="number" id="transferAmount" placeholder="Ingrese el monto" min="1">
+                </div>
+                <button class="action-btn" onclick="transfer()">Transferir</button>
+                <button class="action-btn back-btn" onclick="showScreen('mainMenu')">Volver</button>
+            </div>
+            
+            <div id="historyScreen" class="hidden">
+                <h2>Historial de Transacciones</h2>
+                <div class="transaction-list" id="transactionList"></div>
+                <button class="action-btn back-btn" onclick="showScreen('mainMenu')">Volver</button>
+            </div>
+            
+            <div id="receiptScreen" class="hidden">
+                <h2>Último Comprobante</h2>
+                <div id="receiptContent" style="background: #2d3748; padding: 15px; border-radius: 8px; font-size: 13px;">
+                    <p style="text-align: center; margin-bottom: 10px;">🏦 Banco Nacional</p>
+                    <p style="text-align: center; margin-bottom: 15px; font-size: 11px; color: #a0aec0;">Cajero Automático</p>
+                    <div style="border-top: 1px dashed #4a5568; padding-top: 10px;">
+                        <p id="receiptDetails">No hay transacciones recientes</p>
+                    </div>
+                </div>
+                <button class="action-btn back-btn" onclick="showScreen('mainMenu')">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 5000;
+        let transactions = [
+            { type: 'Retiro', amount: -500, date: new Date(Date.now() - 86400000) },
+            { type: 'Depósito', amount: 1000, date: new Date(Date.now() - 172800000) },
+            { type: 'Transferencia', amount: -250, date: new Date(Date.now() - 259200000) }
+        ];
+        
+        const DAILY_WITHDRAWAL_LIMIT = 3000;
+        const TRANSFER_LIMIT = 5000;
+        const MIN_BALANCE = 10;
+        const SESSION_DURATION = 120000;
+        
+        let sessionTimeout;
+        let sessionInterval;
+        let lastTransaction = null;
+
+        function loadStoredData() {
+            const storedBalance = localStorage.getItem('atm_balance');
+            const storedTransactions = localStorage.getItem('atm_transactions');
+            
+            if (storedBalance) {
+                balance = parseFloat(storedBalance);
+            }
+            
+            if (storedTransactions) {
+                transactions = JSON.parse(storedTransactions);
+                transactions = transactions.map(t => ({
+                    ...t,
+                    date: new Date(t.date)
+                }));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('atm_balance', balance.toString());
+            localStorage.setItem('atm_transactions', JSON.stringify(transactions));
+        }
+
+        function formatCurrency(amount) {
+            return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        }
+
+        function startSession() {
+            let timeLeft = SESSION_DURATION / 1000;
+            
+            sessionInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('sessionTimer').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(sessionInterval);
+                }
+            }, 1000);
+            
+            sessionTimeout = setTimeout(() => {
+                alert('Sesión expirada por inactividad');
+                logout();
+            }, SESSION_DURATION);
+        }
+
+        function resetSessionTimeout() {
+            clearTimeout(sessionTimeout);
+            clearInterval(sessionInterval);
+            startSession();
+        }
+
+        function showScreen(screenId) {
+            if (screenId === 'mainMenu') {
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('depositAmount').value = '';
+                document.getElementById('transferAccount').value = '';
+                document.getElementById('transferAmount').value = '';
+            }
+            
+            document.querySelectorAll('.screen > div').forEach(div => {
+                div.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            
+            if (screenId === 'mainMenu') {
+                updateBalance();
+            }
+            if (screenId === 'historyScreen') {
+                updateTransactionHistory();
+            }
+            if (screenId === 'receiptScreen') {
+                showReceipt();
+            }
+            
+            if (screenId !== 'welcomeScreen') {
+                resetSessionTimeout();
+            }
+        }
+
+        function login() {
+            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const pin = document.getElementById('pin').value;
+            
+            if (!cardNumber) {
+                alert('Por favor ingrese un número de tarjeta');
+                return;
+            }
+            
+            if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                alert('PIN debe ser 4 dígitos numéricos');
+                return;
+            }
+            
+            showScreen('mainMenu');
+            startSession();
+        }
+
+        function logout() {
+            clearTimeout(sessionTimeout);
+            clearInterval(sessionInterval);
+            showScreen('welcomeScreen');
+            document.getElementById('cardNumber').value = '';
+            document.getElementById('pin').value = '';
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = formatCurrency(balance);
+        }
+
+        function withdraw() {
+            const amountInput = document.getElementById('withdrawAmount').value;
+            const amount = parseFloat(amountInput);
+            
+            if (isNaN(amount) || amountInput.trim() === '') {
+                alert('Por favor ingrese un monto válido');
+                return;
+            }
+            
+            if (amount <= 0) {
+                alert('El monto debe ser mayor a cero');
+                return;
+            }
+            
+            if (amount % 10 !== 0) {
+                alert('Solo se permiten montos múltiplos de $10');
+                return;
+            }
+            
+            if (amount > DAILY_WITHDRAWAL_LIMIT) {
+                alert(`El límite diario de retiro es ${formatCurrency(DAILY_WITHDRAWAL_LIMIT)}`);
+                return;
+            }
+            
+            if (amount > balance) {
+                alert('Saldo insuficiente');
+                return;
+            }
+            
+            if (balance - amount < MIN_BALANCE) {
+                alert(`No puede dejar su cuenta con menos de ${formatCurrency(MIN_BALANCE)}`);
+                return;
+            }
+            
+            balance -= amount;
+            lastTransaction = { type: 'Retiro', amount: -amount, date: new Date() };
+            transactions.unshift(lastTransaction);
+            saveData();
+            
+            alert(`Retiro exitoso: ${formatCurrency(amount)}`);
+            
