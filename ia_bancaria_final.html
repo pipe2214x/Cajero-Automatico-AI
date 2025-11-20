@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente IA Bancario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .ai-container {
+            background: #2d3748;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .ai-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .ai-header h1 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .ai-header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+        }
+        
+        .info-panel {
+            background: #1a202c;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .quick-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .ai-chat {
+            background: #1a202c;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .ai-message {
+            background: #4a5568;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: #667eea;
+            text-align: right;
+            margin-left: 40px;
+        }
+        
+        .assistant-message {
+            background: #4a5568;
+            margin-right: 40px;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #4a5568;
+            background: #1a202c;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .send-btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .send-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 15px;
+            color: #a0aec0;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .clear-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #2d3748;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #1a202c;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #a0aec0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ai-container">
+        <div class="ai-header">
+            <h1>🤖 Asistente IA Bancario</h1>
+            <p>Tu ayudante financiero inteligente</p>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-item">
+                <span class="info-label">💰 Saldo disponible:</span>
+                <span class="info-value" id="displayBalance">$5,000.00</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">📊 Transacciones hoy:</span>
+                <span class="info-value" id="todayTransactions">0</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="withdrawLimit">$3,000</div>
+                <div class="stat-label">Límite Retiro Diario</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="transferLimit">$5,000</div>
+                <div class="stat-label">Límite Transferencia</div>
+            </div>
+        </div>
+        
+        <div class="quick-questions">
+            <button class="quick-btn" onclick="askQuestion('¿Cuál es mi saldo?')">💰 Mi saldo</button>
+            <button class="quick-btn" onclick="askQuestion('Muestra mis últimas transacciones')">📋 Historial</button>
+            <button class="quick-btn" onclick="askQuestion('¿Cuánto puedo retirar?')">💵 Límite retiro</button>
+            <button class="quick-btn" onclick="askQuestion('¿Cuál es el límite de transferencia?')">📤 Límite transferencia</button>
+            <button class="quick-btn" onclick="askQuestion('Dame consejos financieros')">💡 Consejos</button>
+        </div>
+        
+        <div class="ai-chat" id="chatContainer">
+            <div class="ai-message assistant-message">
+                <strong>🤖 Asistente:</strong><br><br>
+                ¡Hola! Soy tu asistente bancario inteligente. Puedo ayudarte con:
+                <br><br>
+                • Consultar tu saldo y movimientos<br>
+                • Informarte sobre límites operacionales<br>
+                • Responder preguntas sobre transacciones<br>
+                • Darte consejos financieros básicos<br>
+                • Explicarte cómo usar el cajero automático<br>
+                <br>
+                ¿En qué puedo ayudarte hoy?
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="userInput" 
+                class="chat-input" 
+                placeholder="Escribe tu pregunta aquí..."
+                maxlength="200"
+            >
+            <button class="send-btn" onclick="sendMessage()">Enviar</button>
+        </div>
+        
+        <button class="clear-btn" onclick="clearChat()">🗑️ Limpiar conversación</button>
+    </div>
+
+    <script>
+        let balance = 5000;
+        let transactions = [
+            { type: 'Retiro', amount: -500, date: new Date(Date.now() - 86400000) },
+            { type: 'Depósito', amount: 1000, date: new Date(Date.now() - 172800000) },
+            { type: 'Transferencia', amount: -250, date: new Date(Date.now() - 259200000) },
+            { type: 'Depósito', amount: 2000, date: new Date(Date.now() - 345600000) }
+        ];
+        
+        const DAILY_WITHDRAWAL_LIMIT = 3000;
+        const TRANSFER_LIMIT = 5000;
+        const MIN_BALANCE = 10;
+        const MAX_MESSAGES = 50;
+
+        function loadBankData() {
+            const storedBalance = localStorage.getItem('atm_balance');
+            const storedTransactions = localStorage.getItem('atm_transactions');
+            
+            if (storedBalance) {
+                balance = parseFloat(storedBalance);
+            }
+            
+            if (storedTransactions) {
+                transactions = JSON.parse(storedTransactions);
+                transactions = transactions.map(t => ({
+                    ...t,
+                    date: new Date(t.date)
+                }));
+            }
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('displayBalance').textContent = formatCurrency(balance);
+            
+            const todayTrans = transactions.filter(t => 
+                new Date(t.date).toDateString() === new Date().toDateString()
+            ).length;
+            document.getElementById('todayTransactions').textContent = todayTrans;
+            
+            document.getElementById('withdrawLimit').textContent = formatCurrency(DAILY_WITHDRAWAL_LIMIT);
+            document.getElementById('transferLimit').textContent = formatCurrency(TRANSFER_LIMIT);
+        }
+
+        function formatCurrency(amount) {
+            return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getAIResponse(message) {
+            const msg = message.toLowerCase();
+            
+            const todayWithdrawals = transactions
+                .filter(t => t.type === 'Retiro' && new Date(t.date).toDateString() === new Date().toDateString())
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+            
+            const remainingWithdrawal = DAILY_WITHDRAWAL_LIMIT - todayWithdrawals;
+            
+            const totalDeposits = transactions
+                .filter(t => t.amount > 0)
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalWithdrawals = transactions
+                .filter(t => t.amount < 0)
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+            if (msg.includes('saldo') || msg.includes('dinero') || msg.includes('cuanto tengo')) {
+                let advice = '';
+                if (balance > 3000) {
+                    advice = ' ¡Excelente! Tienes un buen balance en tu cuenta.';
+                } else if (balance > 1000) {
+                    advice = ' Tu saldo es saludable. Considera ahorrar un poco más.';
+                } else {
+                    advice = ' Considera hacer un depósito pronto para mantener un saldo saludable.';
+                }
+                return `💰 Tu saldo actual es de <strong>${formatCurrency(balance)}</strong>.${advice}`;
+            }
+            
+            if (msg.includes('retirar') || msg.includes('retiro') || msg.includes('sacar')) {
+                if (msg.includes('cuanto') || msg.includes('límite') || msg.includes('limite') || msg.includes('máximo') || msg.includes('maximo')) {
+                    return `💵 <strong>Información de retiros:</strong><br><br>
+                            • Límite diario: ${formatCurrency(DAILY_WITHDRAWAL_LIMIT)}<br>
+                            • Retirado hoy: ${formatCurrency(todayWithdrawals)}<br>
+                            • Disponible para retirar: ${formatCurrency(remainingWithdrawal)}<br>
+                            • Tu saldo: ${formatCurrency(balance)}<br><br>
+                            💡 Los retiros deben ser múltiplos de $10.`;
+                }
+                return `💵 Para retirar efectivo:<br><br>
+                        1. Ve al menú principal del cajero<br>
+                        2. Selecciona "Retirar"<br>
+                        3. Ingresa el monto (múltiplo de $10)<br>
+                        4. Confirma la operación<br><br>
+                        Recuerda que tu límite diario es ${formatCurrency(DAILY_WITHDRAWAL_LIMIT)}.`;
+            }
+            
+            if (msg.includes('transferir') || msg.includes('transferencia') || msg.includes('enviar dinero')) {
+                if (msg.includes('límite') || msg.includes('limite') || msg.includes('máximo') || msg.includes('maximo') || msg.includes('cuanto')) {
+                    return `📤 <strong>Información de transferencias:</strong><br><br>
+                            • Límite por operación: ${formatCurrency(TRANSFER_LIMIT)}<br>
+                            • Tu saldo disponible: ${formatCurrency(balance)}<br>
+                            • Saldo mínimo requerido: ${formatCurrency(MIN_BALANCE)}<br><br>
+                            💡 Necesitarás el número de cuenta destino (mínimo 10 dígitos).`;
+                }
+                return `📤 Para hacer una transferencia:<br><br>
+                        1. Selecciona "Transferir" en el menú<br>
+                        2. Ingresa el número de cuenta destino<br>
+                        3. Ingresa el monto a transferir<br>
+                        4. Confirma los datos<br><br>
+                        El límite por transferencia es ${formatCurrency(TRANSFER_LIMIT)}.`;
+            }
+            
+            if (msg.includes('depositar') || msg.includes('depósito') || msg.includes('deposito')) {
+                return `💰 <strong>Para depositar efectivo:</strong><br><br>
+                        1. Selecciona "Depositar" en el menú<br>
+                        2. Ingresa el monto<br>
+                        3. Inserta el efectivo en la ranura<br>
+                        4. Confirma la operación<br><br>
+                        ✅ No hay límite para depósitos.<br>
+                        📊 Total depositado históricamente: ${formatCurrency(totalDeposits)}`;
+            }
+            
+            if (msg.includes('historial') || msg.includes('transacciones') || msg.includes('movimientos') || msg.includes('últimas') || msg.includes('ultimas')) {
+                const last5 = transactions.slice(0, 5);
+                let response = `📋 <strong>Tus últimas ${last5.length} transacciones:</strong><br><br>`;
+                last5.forEach((t, i) => {
+                    response += `${i + 1}. ${t.type}: ${t.amount > 0 ? '+' : ''}${formatCurrency(Math.abs(t.amount))}<br>
+                                  <small style="color: #a0aec0;">${t.date.toLocaleDateString()} a las ${t.date.toLocaleTimeString()}</small><br><br>`;
+                });
+                response += `📊 <strong>Resumen:</strong><br>
+                            • Total retirado: ${formatCurrency(totalWithdrawals)}<br>
+                            • Total depositado: ${formatCurrency(totalDeposits)}`;
+                return response;
+            }
+            
+            if (msg.includes('límite') || msg.includes('limite')) {
+                return `📊 <strong>Límites operacionales:</strong><br><br>
+                        💵 <strong>Retiro diario:</strong> ${formatCurrency(DAILY_WITHDRAWAL_LIMIT)}<br>
+                        📤 <strong>Transferencia:</strong> ${formatCurrency(TRANSFER_LIMIT)}<br>
+                        💰 <strong>Saldo mínimo:</strong> ${formatCurrency(MIN_BALANCE)}<br><br>
+                        💡 Estos límites protegen tu cuenta y previenen fraudes.`;
+            }
+            
+            if (msg.includes('consejo') || msg.includes('recomendación') || msg.includes('recomendacion') || msg.includes('ayuda financiera')) {
+                let tips = `💡 <strong>Consejos financieros personalizados:</strong><br><br>`;
+                
+                if (balance < 500) {
+                    tips += `• Tu saldo está bajo. Intenta depositar regularmente.<br>
+                             • Evita retiros innecesarios.<br>
+                             • Considera establecer un ahorro de emergencia.`;
+                } else if (balance < 2000) {
+                    tips += `• Buen progreso. Sigue ahorrando.<br>
+                             • Intenta ahorrar al menos 20% de tus ingresos.<br>
+                             • Mantén un fondo de emergencia equivalente a 3-6 meses de gastos.`;
+                } else {
+                    tips += `• ¡Excelente manejo financiero!<br>
+                             • Considera invertir parte de tus ahorros.<br>
+                             • Diversifica tus activos.<br>
+                             • Mantén este buen hábito de ahorro.`;
+                }
+                
+                tips += `<br><br>📈 <strong>Regla 50/30/20:</strong><br>
+                         • 50% necesidades básicas<br>
+                         • 30% gustos personales<br>
+                         • 20% ahorros e inversiones`;
+                
+                return tips;
+            }
+            
+            if (msg.includes('ayuda') || msg.includes('qué puedes hacer') || msg.includes('que puedes hacer') || msg.includes('opciones') || msg.includes('cómo') || msg.includes('como')) {
+                return `🤖 <strong>¿Cómo puedo ayudarte?</strong><br><br>
+                        Puedo responder preguntas sobre:<br><br>
+                        💰 Tu saldo y estado de cuenta<br>
+                        📋 Historial de transacciones<br>
+                        💵 Límites de retiro<br>
+                        📤 Límites de transferencia<br>
+                        💡 Consejos financieros<br>
+                        🏦 Cómo usar el cajero<br>
+                        📊 Estadísticas de tu cuenta<br><br>
+                        Solo pregúntame lo que necesites saber. 😊`;
+            }
+            
+            if (msg.includes('pin') || msg.includes('contraseña') || msg.includes('cambiar') || msg.includes('seguridad') || msg.includes('olvidé') || msg.includes('olvide')) {
+                return `🔒 <strong>Seguridad y PIN:</strong><br><br>
+                        • El cambio de PIN debe hacerse en sucursal o banca en línea<br>
+                        • Nunca compartas tu PIN con nadie<br>
+                        • Cámbialo regularmente (cada 3-6 meses)<br>
+                        • No uses fechas de nacimiento obvias<br>
+                        • Cubre el teclado al ingresar tu PIN<br><br>
+                        ⚠️ Si olvidaste tu PIN, contacta a tu banco inmediatamente.`;
+            }
+            
+            if (msg.includes('estadística') || msg.includes('estadistica') || msg.includes('resumen') || msg.includes('análisis') || msg.includes('analisis')) {
+                return `📊 <strong>Resumen de tu cuenta:</strong><br><br>
+                        💰 Saldo actual: ${formatCurrency(balance)}<br>
+                        📈 Total depositado: ${formatCurrency(totalDeposits)}<br>
+                        📉 Total retirado: ${formatCurrency(totalWithdrawals)}<br>
+                        🔄 Número de transacciones: ${transactions.length}<br>
+                        📅 Transacciones hoy: ${transactions.filter(t => new Date(t.date).toDateString() === new Date().toDateString()).length}<br><br>
+                        💡 Balance neto: ${formatCurrency(totalDeposits - totalWithdrawals)}`;
+            }
+            
+            if (msg.includes('clima') || msg.includes('hora') || msg.includes('política') || 
+                msg.includes('receta') || msg.includes('música') || msg.includes('musica') || 
+                msg.includes('película') || msg.includes('pelicula') || msg.includes('deporte') ||
+                msg.includes('fútbol') || msg.includes('futbol')) {
+                return `Lo siento, soy un asistente bancario especializado. Solo puedo ayudarte con:<br><br>
+                        • Consultas sobre tu cuenta<br>
+                        • Información de transacciones<br>
+                        • Límites operacionales<br>
+                        • Consejos financieros básicos<br>
+                        • Uso del cajero automático<br><br>
+                        ¿Tienes alguna pregunta bancaria? 🏦`;
+            }
+            
+            return `🤔 No estoy seguro de entender tu pregunta. Puedo ayudarte con:<br><br>
+                    💰 <strong>Saldo:</strong> "¿Cuál es mi saldo?"<br>
+                    📋 <strong>Historial:</strong> "Muestra mis transacciones"<br>
+                    💵 <strong>Retiros:</strong> "¿Cuánto puedo retirar?"<br>
+                    📤 <strong>Transferencias:</strong> "Límite de transferencia"<br>
+                    💡 <strong>Consejos:</strong> "Dame consejos financieros"<br>
+                    📊 <strong>Estadísticas:</strong> "Resumen de mi cuenta"<br><br>
+                    ¿Sobre cuál te gustaría saber más?`;
+        }
+
+        function askQuestion(question) {
+            document.getElementById('userInput').value = question;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) {
+                alert('Por favor escribe una pregunta');
+                return;
+            }
+            
+            const chatContainer = document.getElementById('chatContainer');
+            
+            const messages = chatContainer.querySelectorAll('.ai-message');
+            if (messages.length >= MAX_MESSAGES) {
+                messages[0].remove();
+                messages[1].remove();
+            }
+            
+            const userMsg = document.createElement('div');
+            userMsg.className = 'ai-message user-message';
+            userMsg.innerHTML = `<strong>Tú:</strong><br>${escapeHtml(message)}`;
+            chatContainer.appendChild(userMsg);
+            
+            input.value = '';
+            
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'ai-message assistant-message loading';
+            loadingMsg.innerHTML = '🤖 Pensando...';
+            chatContainer.appendChild(loadingMsg);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            setTimeout(() => {
+                loadingMsg.remove();
+                
+                const response = getAIResponse(message);
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'ai-message assistant-message';
+                aiMsg.innerHTML = `<strong>🤖 Asistente:</strong><br><br>${response}`;
+                chatContainer.appendChild(aiMsg);
+                
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 800);
+        }
+
+        function clearChat() {
+            if (confirm('¿Estás seguro de que quieres limpiar la conversación?')) {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML = `
+                    <div class="ai-message assistant-message">
+                        <strong>🤖 Asistente:</strong><br><br>
+                        Conversación limpiada. ¿En qué puedo ayudarte?
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        window.addEventListener('load', () => {
+            loadBankData();
+            setInterval(loadBankData, 30000);
+        });
+    </script>
+</body>
+</html>
